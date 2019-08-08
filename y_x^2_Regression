@@ -1,0 +1,36 @@
+import tensorflow as tf
+import numpy as np
+X = np.linspace(1, 40, 2000)
+X = X.reshape([2000, 1])
+Y = X*X
+x = tf.placeholder(name='input', shape=[None, 1], dtype='float32')
+y = tf.placeholder(name='input_y', shape=[None, 1],dtype='float32')
+w1 = tf.get_variable(name='w1', shape=[1, 10], initializer=tf.truncated_normal_initializer())
+w2 = tf.get_variable(name = 'w2', shape = [10, 15], initializer=tf.truncated_normal_initializer())
+w3 = tf.Variable(tf.truncated_normal([15, 1]), name= 'w3', dtype='float32')
+bias1 = tf.Variable(tf.ones([1, 10]))
+a = tf.nn.sigmoid(tf.matmul(x, w1) + bias1)
+bias2 = tf.Variable(tf.ones([1, 15]))
+b = tf.nn.sigmoid(tf.matmul(a, w2) + bias2)
+result2 = tf.matmul(b, w3)
+step = tf.Variable(0, trainable=False)
+rate = tf.train.exponential_decay(0.1, step, 1000, 0.9)#参数可以自己选调
+loss = tf.reduce_mean(tf.square(result2-y))
+#learning_rate = 0.001
+optimizer = tf.train.AdamOptimizer(rate)
+train = optimizer.minimize(loss, global_step=step)
+
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    a = np.linspace(20, 30, 100)
+    a = a.reshape(100, 1)
+    step = 100000
+    for i in range(step):
+        sess.run(train, feed_dict={x: X, y: Y})
+        if i %1000 == 0:
+            loss1 = loss.eval(feed_dict = {x: X, y: Y}, session=sess)
+            print('the value of loss is : %f' %loss1)
+
+    result = result2.eval(feed_dict={x: a}, session=sess)
+    print(a)
+    print(result)
