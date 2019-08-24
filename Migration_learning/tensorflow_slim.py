@@ -108,7 +108,7 @@ def flowers_fine_tuning():
         learning_rate = 0.00001
 
         # 创建vgg16网络  如果想冻结所有层，可以指定slim.conv2d中的 trainable=False
-        net, end_points = vgg.vgg_16(input_images, is_training=True, num_classes=NUM_CLASSES)
+        net, end_points = vgg.vgg_16(input_images, is_training=False, num_classes=NUM_CLASSES)
         print(end_points)#每个元素都是以vgg_16/xx命名
         # net = tf.squeeze(net, axis=[1, 2])
         # net = slim.fully_connected(net, num_outputs=NUM_CLASSES,
@@ -121,6 +121,7 @@ def flowers_fine_tuning():
     #load_fn = slim.assign_from_checkpoint(checkpoint_file, variables_to_train, ignore_missing_vars=True)
     # 预测标签
     pred = tf.argmax(net, axis=1)
+    trainable_tensor = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 
     label_one_hot = tf.squeeze(tf.one_hot(input_labels - 1, NUM_CLASSES))
     cost = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=label_one_hot, logits=net))
